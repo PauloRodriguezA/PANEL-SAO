@@ -1,0 +1,15 @@
+EPA-SAO ENTEL - PUBLICACION ESTABLE POR SSH
+
+USO:
+1. Cierra ventanas EPA anteriores.
+2. Ejecuta CERRAR_EPA_TOTAL.cmd si crees que quedo algo abierto.
+3. Abre Abrir_EPA_SAO.cmd.
+4. Espera a que diga EPA SAO PUBLICA OK.
+5. Usa el LINK ADMIN CON TOKEN que aparece en consola. Tambien queda copiado al portapapeles.
+
+IMPORTANTE:
+- Manten la ventana negra abierta durante la demo.
+- Si entras por error a /admin sin token, la pantalla protegida ahora trae un boton para entrar al panel admin.
+- El panel local de respaldo es http://127.0.0.1:8081/admin?token=entel-epa-admin.
+- Para clientes usa los links generados desde el panel admin.
+- Si la consola dice ATENCION por warning del proveedor, ese link no es ideal para clientes; es solo respaldo.
