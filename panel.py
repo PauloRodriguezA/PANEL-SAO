@@ -107,12 +107,19 @@ SERVICIOS_CONFIG = {
 }
 SERVICIO_TODO = "Todo"
 SERVICIO_OPCIONES = list(SERVICIOS_CONFIG.keys()) + [SERVICIO_TODO]
+SERVICIO_FIJO_ARCHIVO = APP_DIR / "servicio_fijo.txt"
 
 
 def servicio_fijo_desde_contexto():
     servicio_env = os.environ.get("PANEL_SERVICIO_FIJO", "").strip().upper()
     if servicio_env in SERVICIOS_CONFIG:
         return servicio_env
+    try:
+        servicio_archivo = SERVICIO_FIJO_ARCHIVO.read_text(encoding="utf-8-sig").strip().upper()
+    except OSError:
+        servicio_archivo = ""
+    if servicio_archivo in SERVICIOS_CONFIG:
+        return servicio_archivo
     if APP_DIR.parent.name.upper() == "ST" and APP_DIR.name.upper() in SERVICIOS_CONFIG:
         return APP_DIR.name.upper()
     return ""
@@ -324,7 +331,7 @@ def pct_desde_nota_uso(valor):
 CSS_PATH = ASSETS_DIR / "panel.css"
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=2)
 def cargar_css_panel(ruta_css, version_css):
     css = Path(ruta_css).read_text(encoding="utf-8")
     reemplazos = {
@@ -555,7 +562,7 @@ def resumen_meses_reclamos_para_filtro(df_base):
 # CARGA
 # =========================================================
 
-@st.cache_data
+@st.cache_data(show_spinner=False, max_entries=6)
 def cargar(ruta_archivo, version_archivo):
     ruta = Path(ruta_archivo)
     ruta_parquet = ruta.with_suffix(".parquet")
@@ -1273,7 +1280,7 @@ def aplicar_reiteraciones_total_operacional(df_base):
     return df_base
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False, max_entries=4)
 def cargar_disponibilidad(ruta_cache, version_cache):
     ruta = Path(ruta_cache)
     if not ruta.exists():
@@ -1363,7 +1370,7 @@ def cargar_disponibilidad(ruta_cache, version_cache):
     return df_disp[DISPONIBILIDAD_COLUMNAS].copy()
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False, max_entries=4)
 def cargar_reclamos(ruta_cache, version_cache, servicio=None):
     ruta = Path(ruta_cache)
     if not ruta.exists():
@@ -1421,7 +1428,7 @@ def cargar_reclamos(ruta_cache, version_cache, servicio=None):
     return df_rec[RECLAMOS_COLUMNAS].copy()
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False, max_entries=6)
 def cargar_epa(ruta_db, version_db):
     ruta = Path(ruta_db)
     columnas = [
@@ -1731,7 +1738,7 @@ def preparar_export_reclamos(df_rec_base):
     })
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=2)
 def cargar_uso_herramienta(ruta_archivo, version_archivo):
     ruta = Path(ruta_archivo)
     columnas = [
@@ -1796,7 +1803,7 @@ def versiones_bases_panel(servicios):
     return tuple((str(ruta), version_archivo_opcional(ruta)) for ruta in rutas)
 
 
-@st.cache_resource(show_spinner=False, max_entries=8)
+@st.cache_resource(show_spinner=False, max_entries=4)
 def cargar_bases_preparadas(servicios, versiones):
     del versiones  # solo invalida el cache cuando cambia una fuente
     servicios = list(servicios)
