@@ -488,32 +488,11 @@ def etiqueta_semana_calendario(token):
     try:
         anio_texto, semana_texto = str(token).split("-W", 1)
         inicio = datetime.fromisocalendar(int(anio_texto), int(semana_texto), 1)
-        termino = inicio + timedelta(days=6)
-        mes_inicio = MESES_CORTOS[MESES[inicio.month - 1]]
-        mes_termino = MESES_CORTOS[MESES[termino.month - 1]]
-        rango = (
-            f"{inicio.day:02d}-{termino.day:02d} {mes_termino}"
-            if inicio.month == termino.month
-            else f"{inicio.day:02d} {mes_inicio}-{termino.day:02d} {mes_termino}"
-        )
-        return f"Semana {int(semana_texto):02d} · {rango}"
-    except (TypeError, ValueError):
-        return f"Semana {token}"
-
-
-def etiqueta_semana_calendario_clara(token):
-    try:
-        anio_texto, semana_texto = str(token).split("-W", 1)
-        inicio = datetime.fromisocalendar(int(anio_texto), int(semana_texto), 1)
-        termino = inicio + timedelta(days=6)
         mes_referencia = inicio + timedelta(days=3)
-        mes = MESES_CORTOS[MESES[mes_referencia.month - 1]]
-        return f"Semana {int(semana_texto):02d} - {mes} | {inicio.day:02d}-{termino.day:02d}"
+        mes = MESES_CORTOS[MESES[mes_referencia.month - 1]].lower()
+        return f"Semana {int(semana_texto)} - {mes}"
     except (TypeError, ValueError):
         return f"Semana {token}"
-
-
-etiqueta_semana_calendario = etiqueta_semana_calendario_clara
 
 
 def resumen_meses_disponibilidad_para_filtro(df_base):
