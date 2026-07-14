@@ -133,9 +133,7 @@ def servicio_default_gerencial():
     servicio_env = os.environ.get("PANEL_SERVICIO_DEFAULT", "").strip()
     if servicio_env in SERVICIO_OPCIONES:
         return servicio_env
-    if APP_DIR.name.upper() in {"PANEL_PUBLICAR_GIT_TODO", "PUBLICAR_GIT_PANEL", "PANEL_GIT_TODO"}:
-        return SERVICIO_TODO
-    return "IBM"
+    return SERVICIO_TODO
 
 def imagen_data_uri(ruta):
     ruta = str(ruta)
@@ -145,6 +143,12 @@ def imagen_data_uri(ruta):
 
 LOGO_ECC_DATA = imagen_data_uri(LOGO_ECC)
 LOGO_ECC_ICONO_DATA = imagen_data_uri(LOGO_ECC_ICONO)
+
+SERVICIO_DEFAULT_VERSION = "2026-07-14-todo-v1"
+if MODO_GERENCIAL and st.session_state.get("_servicio_default_version") != SERVICIO_DEFAULT_VERSION:
+    st.session_state.pop("servicio_tecnico", None)
+    st.session_state.pop("servicio_tecnico_pills", None)
+    st.session_state["_servicio_default_version"] = SERVICIO_DEFAULT_VERSION
 
 with st.sidebar:
     st.markdown(
@@ -180,7 +184,7 @@ SERVICIOS_ACTIVOS = list(SERVICIOS_CONFIG.keys()) if SERVICIO_COMPARATIVO else [
 SERVICIO_TITULO = "IBM + SAO + ECC" if SERVICIO_COMPARATIVO else SERVICIO_ACTUAL
 SERVICIO_CONFIG = SERVICIOS_CONFIG[SERVICIOS_ACTIVOS[0]]
 
-FILTROS_DEFAULT_VERSION = "2026-07-13-zona-tecnico-v3"
+FILTROS_DEFAULT_VERSION = "2026-07-14-filtros-completos-v4"
 servicio_anterior_filtros = st.session_state.get("_servicio_filtros_actual")
 reiniciar_filtros = (
     (servicio_anterior_filtros is not None and servicio_anterior_filtros != SERVICIO_ACTUAL)
@@ -2160,20 +2164,35 @@ with st.sidebar:
 
     def inicializar_pills_filtro(items, key):
         items_lista = list(items)
+        key_opciones = f"{key}_opciones_previas"
+        opciones_previas = list(st.session_state.get(key_opciones, []))
         if st.session_state.get(f"{key}_force_all", False):
             st.session_state[key] = items_lista
             st.session_state[f"{key}_force_all"] = False
 
-        seleccion = st.session_state.get(key, items_lista)
+        seleccion_guardada = st.session_state.get(key, items_lista)
+        seleccion = seleccion_guardada
         if seleccion is None:
             seleccion = []
         if not isinstance(seleccion, list):
             seleccion = [seleccion]
-        seleccion = [item for item in seleccion if item in items_lista]
-        if not seleccion and not st.session_state.get(f"{key}_empty_intent", False):
+
+        vacio_intencional = st.session_state.get(f"{key}_empty_intent", False)
+        seleccionaba_todo = (
+            bool(opciones_previas)
+            and set(seleccion) == set(opciones_previas)
+            and not vacio_intencional
+        )
+        if not opciones_previas or seleccionaba_todo:
             seleccion = items_lista
+        else:
+            seleccion = [item for item in seleccion if item in items_lista]
+            if not seleccion and not vacio_intencional:
+                seleccion = items_lista
+
         if st.session_state.get(key) != seleccion:
             st.session_state[key] = seleccion
+        st.session_state[key_opciones] = items_lista
         return seleccion
 
     def boton_seleccionar_todo_pills(items, key, key_boton):
